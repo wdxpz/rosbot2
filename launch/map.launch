@@ -1,0 +1,10 @@
+<launch>
+
+
+    <arg name="map_file" default="$(find tutorial_pkg)/maps/bj_test_01/map.yaml"/>       <!-- path of map file -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+    <!-- Show in Rviz   -->
+    <node name="rviz" pkg="rviz" type="rviz"/>
+
+</launch>
