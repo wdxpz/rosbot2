@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 # For simulation: launch gazebo world & amcl_demo prior to run this script
 
 import rospy
+import tf
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 import actionlib
 from actionlib_msgs.msg import *
@@ -73,6 +74,19 @@ class GoToPose():
         self.goal_sent = False
         return result
 
+    def getMapLocation(self):
+
+        listener = tf.TransformListener()
+        try:
+            listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(10.0))
+            trans, rot = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
+            robot_x, robot_y = trans[0], trans[1]
+            logger.info('current position -- x:{}, y:{}'.format(robot_x, robot_y))
+        except Exception as e:
+            logger.error('getMapLocation Error of robot')
+            return
+
+
     def shutdown(self):
         if self.goal_sent:
             self.move_base.cancel_goal()
@@ -85,7 +99,7 @@ if __name__ == '__main__':
         navigator = GoToPose()
 
         # Customize the following values so they are appropriate for your location
-        position = {'x': 0.2, 'y' : 0.2}
+        position = {'x': 0.5, 'y' : 0.5}
         quaternion = {'r1' : 0.000, 'r2' : 0.000, 'r3' : 0.000, 'r4' : 1.000}
 
         rospy.loginfo("Go to (%s, %s) pose", position['x'], position['y'])
@@ -93,6 +107,7 @@ if __name__ == '__main__':
 
         if success:
             rospy.loginfo("Hooray, reached the desired pose")
+            navigator.getMapLocation()
         else:
             rospy.loginfo("The base failed to reach the desired pose")
 

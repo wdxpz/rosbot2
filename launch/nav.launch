@@ -21,7 +21,7 @@
                 <rosparam file="$(find tutorial_pkg)/config/trajectory_planner.yaml" command="load" />
     </node>
 
-    <arg name="map_file" default="$(find tutorial_pkg)/maps/bj_test_01/map.yaml"/>       <!-- path of map file -->
+    <arg name="map_file" default="$(find tutorial_pkg)/maps/home01/map.yaml"/>       <!-- path of map file -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="true" />
 
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
@@ -42,6 +42,8 @@
 
     <param name="robot_description" command="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>
     <!-- Show in Rviz   -->
-    <node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find rosbot_description)/rviz/rosbot.rviz" required="true" output="screen"/>
+    <!--<node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find rosbot_description)/rviz/rosbot.rviz" required="true" output="screen"/>-->
+    <node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" output="screen" />
+
 
 </launch>
