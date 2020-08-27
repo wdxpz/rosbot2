@@ -52,3 +52,37 @@ cp -r launch /home/husarion/ros_workspace/src/tutorial_pkg/launch
 ### Implementation reference for Rosbot 2.0
 1. [map navigation](https://husarion.com/tutorials/ros-tutorials/9-map-navigation/)
 2. [config files for movebase](https://github.com/husarion/tutorial_pkg/tree/master/config)
+
+## Finetune navigation
+refer detai [Path planning](https://husarion.com/tutorials/ros-tutorials/7-path-planning/)
+
+### Parameters for trajectory planner
+file: `trajectory_planner.yaml` in  `~/ros_workspace/src/tutorial_pkg/config/`
+
+```
+xy_goal_tolerance: 0.15
+yaw_goal_tolerance: 0.25
+
+```
+These parameters define how far from destination it can be considered as reached. Linear tolerance is in meters, angular tolerance is in radians.
+
+### Parameters for local cost map
+file 'local_costmap_params.yaml' in  `~/ros_workspace/src/tutorial_pkg/config/`
+
+```
+static_map: false
+```
+This parameter defines if map can change in time, true if map will not change.
+*need to check if should set as true*
+
+
+### Common parameters for cost map
+file: `costmap_common_params.yaml` in  `~/ros_workspace/src/tutorial_pkg/config/`
+
+```
+obstacle_range: 6.0
+raytrace_range: 8.5
+```
+In `obstacle_range` this range obstacles will be considered during path planning, `raytrace_range` This defines range in which area could be considered as free
+*need to check if can set obstacle_range: 3.0 raytrace_range: 3.5 like turtlebot3_waffle_pi*
+

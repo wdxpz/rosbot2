@@ -29,6 +29,9 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 from logger import getLogger
 logger = getLogger('GoToPose')
 
+position = {'x': 0, 'y' : 0}
+
+
 class GoToPose():
     def __init__(self):
 
@@ -50,7 +53,7 @@ class GoToPose():
         self.goal_sent = True
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = 'map'
-        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.header.stamp = rospy.Time(0)
         goal.target_pose.pose = Pose(Point(pos['x'], pos['y'], 0.000),
                                      Quaternion(quat['r1'], quat['r2'], quat['r3'], quat['r4']))
         logger.info(goal)
@@ -99,7 +102,7 @@ if __name__ == '__main__':
         navigator = GoToPose()
 
         # Customize the following values so they are appropriate for your location
-        position = {'x': 0.5, 'y' : 0.5}
+        #position = {'x': 0.3, 'y' : 1.5}
         quaternion = {'r1' : 0.000, 'r2' : 0.000, 'r3' : 0.000, 'r4' : 1.000}
 
         rospy.loginfo("Go to (%s, %s) pose", position['x'], position['y'])
