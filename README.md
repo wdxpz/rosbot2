@@ -86,3 +86,25 @@ raytrace_range: 8.5
 In `obstacle_range` this range obstacles will be considered during path planning, `raytrace_range` This defines range in which area could be considered as free
 *need to check if can set obstacle_range: 3.0 raytrace_range: 3.5 like turtlebot3_waffle_pi*
 
+### tune the performance to avoid error like `Costmap2DROS transform timeout`, `Could not get robot pose, cancelling reconfiguration`
+1. refer [control loop missed its desired rate, but with low CPU load](https://answers.ros.org/question/207010/control-loop-missed-its-desired-rate-but-with-low-cpu-load/) and [Problem loading prebuilt map](https://community.husarion.com/t/problems-loading-pre-built-map/700/19) to see how to adjust local_cost params and acml node parasm, acutally it is found these param work:
+```
+#local_costmap_paras.yaml
+  transform_tolerance: 0.5
+  resolution: 0.05
+
+```
+
+```
+#acml node params
+  <param name="transform_tolerance" value="0.5"/>
+  <param name="update_min_d" value="0.2"/>
+  <param name="update_min_a" value="0.2"/>
+  <param name="min_particles" value="500"/> #these two paras are for waffle_pi, they may be increase a little bit
+  <param name="max_particles" value="3000"/> 
+
+```
+and also `control loop rate` in `move_base` node:
+```
+ <param name="controller_frequency" value="5.0" /> #origin value is 10
+```

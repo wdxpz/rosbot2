@@ -41,7 +41,7 @@ class GoToPose():
         rospy.on_shutdown(self.shutdown)
 
 	# Tell the action client that we want to spin a thread by default
-        self.move_base = actionlib.SimpleActionClient("rb2p_0/move_base", MoveBaseAction)
+        self.move_base = actionlib.SimpleActionClient("/move_base", MoveBaseAction)
         logger.info("Wait for the action server to come up")
 
 	# Allow up to 5 seconds for the action server to come up
@@ -81,8 +81,8 @@ class GoToPose():
 
         listener = tf.TransformListener()
         try:
-            listener.waitForTransform("/map", "rb2p_0/base_link", rospy.Time(0), rospy.Duration(10.0))
-            trans, rot = listener.lookupTransform("/map", "rb2p_0/base_link", rospy.Time(0))
+            listener.waitForTransform("/map", "/base_link", rospy.Time(0), rospy.Duration(10.0))
+            trans, rot = listener.lookupTransform("/map", "/base_link", rospy.Time(0))
             robot_x, robot_y = trans[0], trans[1]
             logger.info('current position -- x:{}, y:{}'.format(robot_x, robot_y))
         except Exception as e:
