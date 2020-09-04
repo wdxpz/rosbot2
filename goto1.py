@@ -29,7 +29,7 @@ from geometry_msgs.msg import Pose, Point, Quaternion
 from logger import getLogger
 logger = getLogger('GoToPose')
 
-position = {'x': 0.0, 'y' : 0.0}
+position = {'x': 0.0, 'y' : 0.7}
 
 
 class GoToPose():

@@ -12,7 +12,7 @@
         <arg name="rosbot_pro" value="true"/>
     </include>
 
-    <node pkg="move_base" type="move_base" name="move_base" output="log">
+    <node pkg="move_base" type="move_base" name="move_base" output="screen">
                 <param name="controller_frequency" value="10.0" />
                 <rosparam file="$(find tutorial_pkg)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
                 <rosparam file="$(find tutorial_pkg)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
@@ -21,7 +21,7 @@
                 <rosparam file="$(find tutorial_pkg)/config/trajectory_planner.yaml" command="load" />
     </node>
 
-    <arg name="map_file" default="$(find tutorial_pkg)/maps/home01/map.yaml"/>       <!-- path of map file -->
+    <arg name="map_file" default="$(find multi_rosbot_nav)/maps/bj01/map.yaml"/>       <!-- path of map file -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="true" />
 
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
@@ -31,6 +31,7 @@
         <param name="base_frame_id" value="base_link"/>
         <param name="update_min_d" value="0.1"/>
         <param name="update_min_a" value="0.2"/>
+        <!--<param name="use_map_topic" value="true"/>-->
         <param name="min_particles" value="500"/>
         <param name="global_frame_id" value="map"/>
         <param name="tf_broadcast" value="true" />

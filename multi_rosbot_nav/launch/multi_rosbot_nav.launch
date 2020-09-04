@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+	<!-- map server with simul map -->
+	<arg name="map_file" default="$(find multi_rosbot_nav)/maps/bj01/map.yaml" />
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="false" />
+	
+    
+    <!-- ROSBOT1 -->
+	<group ns="rosbot1">
+          <param name="tf_prefix" value="rosbot1" />
+          <rosparam command="load" file="$(find joint_state_controller)/joint_state_controller.yaml"/>
+  
+          <node name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" output="screen" args="joint_state_controller"/>
+          <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
+          <node pkg="tf" type="static_transform_publisher" name="laser_broadcaster" args="0 0 0 3.14 0 0 rosbot1/base_link rosbot1/laser_frame 100" />
+	  <!--<node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen" />-->
+	</group>
+
+    <include file="$(find multiple_rosbots_simulation)/launch/move_base_rosbot1.launch" />
+    <include file="$(find multiple_rosbots_simulation)/launch/amcl_only_rosbot1.launch" />
+
+</launch>
+

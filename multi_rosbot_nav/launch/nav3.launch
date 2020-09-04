@@ -5,13 +5,13 @@
     <arg name="use_rviz" default="true"/>
 
     <!-- Load the robot description parameters--> 
-    <param name="robot_description" command="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>
+    <!--<param name="robot_description" command="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>-->
 
     <arg name="map_file" default="$(find tutorial_pkg)/maps/bj01/map.yaml"/>       <!-- path of map file -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
     <group ns="$(arg robot_namespace)">
-        <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"  output="screen">
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"  output="screen">
             <param name="tf_prefix" value="$(arg robot_namespace)" />
         </node>
 
@@ -37,6 +37,7 @@
             <param name="base_link_frame" value="/rb2p_0/base_link"/>
             <param name="odom_frame" value="/rb2p_0/odom"/>
             <param name="world_frame" value="/rb2p_0/odom"/>
+            <param name="frequency" value="30"/>
 
             <!--  Placeholder for output topic remapping -->
             <remap from="odometry/filtered" to="/rb2p_0/odom"/>
@@ -47,9 +48,9 @@
 
 
         <!--launch move_base-->
-        <!--<node pkg="move_base" type="move_base" name="move_base" output="log">
-                    <remap from="map" to="/map"/>
-                    <param name="controller_frequency" value="10.0" />
+        <node pkg="move_base" type="move_base" name="move_base" output="screen">
+                    <param name="recovery_behavior_enabled" value="true"/>
+                    <param name="controller_frequency" value="5.0" />
 	            <rosparam file="$(find tutorial_pkg)/config2/rb2p_0.yaml" command="load" ns="global_costmap"/>
                     <rosparam file="$(find tutorial_pkg)/config2/rb2p_0.yaml" command="load" ns="local_costmap"/>
                     <rosparam file="$(find tutorial_pkg)/config2/costmap_common_params.yaml" command="load" ns="global_costmap" />
@@ -57,13 +58,14 @@
                     <rosparam file="$(find tutorial_pkg)/config2/local_costmap_params.yaml" command="load" />
                     <rosparam file="$(find tutorial_pkg)/config2/global_costmap_params.yaml" command="load" />
                     <rosparam file="$(find tutorial_pkg)/config2/trajectory_planner.yaml" command="load" />
+                    <!--<remap from="map" to="/map"/>               
                     <param name="global_costmap/global_frame" value="map"/>
                     <param name="global_costmap/laser_scan_sensor/topic" value="$(arg robot_namespace)/scan"/>
                     <param name="local_costmap/global_frame" value="map"/>
                     <param name="local_costmap/laser_scan_sensor/topic" value="$(arg robot_namespace)/scan"/>              
                     <param name="local_costmap/robot_base_frame" value="$(arg robot_namespace)/base_footprint"/>
-                    <remap from="map" to="/map"/>
-        </node>-->
+                    <remap from="map" to="/map"/>-->
+        </node>
 
         <node pkg="amcl" type="amcl" name="amcl" output="screen">
             <remap from="scan" to="/rb2p_0/scan"/>
@@ -74,9 +76,11 @@
             <remap from="static_map" to="/static_map"/>
             <!--<remap from="map" to="/map"/>-->
             <param name="odom_model_type" value="diff-corrected"/>
-            <param name="update_min_d" value="0.1"/>
+            <param name="transform_tolerance" value="0.5"/>
+            <param name="update_min_d" value="0.2"/>
             <param name="update_min_a" value="0.2"/>
             <param name="min_particles" value="500"/>
+            <param name="max_particles" value="3000"/>
             <param name="tf_broadcast" value="true" />
             <param name="initial_pose_x" value="0.0"/>
             <param name="initial_pose_y" value="0.0"/>
@@ -92,3 +96,4 @@
 
 
 </launch>
+

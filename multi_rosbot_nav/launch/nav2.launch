@@ -1,0 +1,150 @@
+<launch>
+
+    <arg name="robot_namespace" default="rb2p_0"/>
+
+    <arg name="use_rviz" default="true"/>
+
+    <!-- Load the robot description parameters--> 
+    <!--<param name="robot_description" command="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>-->
+
+    <arg name="map_file" default="$(find multi_rosbot_nav)/maps/bj01/map.yaml"/>       <!-- path of map file -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+    <group ns="$(arg robot_namespace)">
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"  output="screen">
+            <param name="tf_prefix" value="$(arg robot_namespace)" />
+        </node>
+
+        <node pkg="tf" type="static_transform_publisher" name="ROSbot_laser" args="0 0 0 3.14 0 0 rb2p_0/base_link rb2p_0/laser 100"  output="screen"/>
+
+        <node pkg="rplidar_ros" type="rplidarNode" name="rplidar">
+            <param name="tf_prefix" value="$(arg robot_namespace)" />
+            <param name="frame_id" type="string" value="$(arg robot_namespace)/laser"/>
+            <param name="angle_compensate" type="bool" value="true"/>
+            <param name="serial_baudrate" type="int" value="256000"/><!-- model A3 (ROSbot 2.0 PRO) -->
+        </node>
+
+        <!--launch rosbot_ekf with specific params-->
+        <include file="$(find rosbot_ekf)/launch/rosserial_bridge.launch">
+            <arg name="serial_port" value="/dev/ttyS4"/>
+            <arg name="serial_baudrate" value="460800"/>
+        </include>
+
+        <include file="$(find rosbot_ekf)/launch/message_conversion.launch"/>
+
+        <node pkg="robot_localization" type="ekf_localization_node" name="rosbot_ekf" clear_params="true">
+            <rosparam command="load" file="$(find rosbot_ekf)/params/ekf_params.yaml"/>
+            <param name="base_link_frame" value="/rb2p_0/base_link"/>
+            <param name="odom_frame" value="/rb2p_0/odom"/>
+            <param name="world_frame" value="/rb2p_0/odom"/>
+            <param name="frequency" value="30"/>
+
+            <!--  Placeholder for output topic remapping -->
+            <remap from="odometry/filtered" to="/rb2p_0/odom"/>
+            <!-- <remap from="accel/filtered" to=""/> -->
+        </node>
+    
+        <node pkg="tf" type="static_transform_publisher" name="imu_publisher" args="0 0 0.02 0 0 0 $(arg robot_namespace)/base_link $(arg robot_namespace)/imu_link 100" />
+
+    </group>
+
+        <!--launch move_base-->
+        <arg name="odom_frame_id"   default="/rb2p_0/odom"/>
+        <arg name="base_frame_id"   default="/rb2p_0/base_link"/>
+        <arg name="global_frame_id" default="/map"/>
+        <arg name="odom_topic" default="/rb2p_0/odom" />
+        <arg name="laser_topic" default="/rb2p_0/scan" />
+
+
+        <node pkg="move_base" type="move_base" respawn="false" name="move_base_rb2p_0" output="screen">
+          <rosparam file="$(find multi_rosbot_nav)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+          <rosparam file="$(find multi_rosbot_nav)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+          <rosparam file="$(find multi_rosbot_nav)/config/local_costmap_params.yaml" command="load" />
+          <rosparam file="$(find multi_rosbot_nav)/config/global_costmap_params.yaml" command="load" />
+          <!-- external params file that could be loaded into the move_base namespace -->
+
+          <!-- reset frame_id parameters using user input data -->
+          <param name="global_costmap/global_frame" value="$(arg global_frame_id)"/>
+          <param name="global_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+          <param name="local_costmap/global_frame" value="$(arg odom_frame_id)"/>
+          <param name="local_costmap/robot_base_frame" value="$(arg base_frame_id)"/>
+          <param name="DWAPlannerROS/global_frame_id" value="$(arg odom_frame_id)"/>
+
+          <remap from="cmd_vel" to="/rb2p_0/cmd_vel"/>
+          <remap from="odom" to="$(arg odom_topic)"/>
+          <remap from="scan" to="$(arg laser_topic)"/>
+          <remap from="map" to="/map" />
+
+          <remap from="/move_base_simple/goal"                                           to="/rb2p_0/move_base_simple/goal" />
+          <remap from="/move_base/TebLocalPlannerROS/global_plan"                        to="/rb2p_0/move_base/TebLocalPlannerROS/global_plan" />
+          <remap from="/move_base/TebLocalPlannerROS/local_plan"                         to="/rb2p_0/move_base/TebLocalPlannerROS/local_plan" />
+          <remap from="/move_base/TebLocalPlannerROS/teb_markers"                        to="/rb2p_0/move_base/TebLocalPlannerROS/teb_markers" />
+          <remap from="/move_base/TebLocalPlannerROS/teb_markers_array"                  to="/rb2p_0/move_base/TebLocalPlannerROS/teb_markers_array" />
+          <remap from="/move_base/TebLocalPlannerROS/teb_poses"                          to="/rb2p_0/move_base/TebLocalPlannerROS/teb_poses" />
+          <remap from="/move_base/global_costmap/costmap"                                to="/rb2p_0/move_base/global_costmap/costmap" />
+          <remap from="/move_base/global_costmap/costmap_updates"                        to="/rb2p_0/move_base/global_costmap/costmap_updates" />
+          <remap from="/move_base/local_costmap/costmap"                                 to="/rb2p_0/move_base/local_costmap/costmap" />
+          <remap from="/move_base/local_costmap/costmap_updates"                         to="/rb2p_0/move_base/local_costmap/costmap_updates" />
+          <remap from="/move_base/local_costmap/footprint"                               to="/rb2p_0/move_base/local_costmap/footprint" />
+
+          <remap from="/move_base/GlobalPlanner/parameter_descriptions"                  to="/rb2p_0/move_base/GlobalPlanner/parameter_descriptions" />
+          <remap from="/move_base/GlobalPlanner/parameter_updates"                       to="/rb2p_0/move_base/GlobalPlanner/parameter_updates" />
+          <remap from="/move_base/GlobalPlanner/plan"                                    to="/rb2p_0/move_base/GlobalPlanner/plan" />
+          <remap from="/move_base/GlobalPlanner/potential"                               to="/rb2p_0/move_base/GlobalPlanner/potential" />
+          <remap from="/move_base/TebLocalPlannerROS/obstacles"                          to="/rb2p_0/move_base/TebLocalPlannerROS/obstacles" />
+          <remap from="/move_base/TebLocalPlannerROS/parameter_descriptions"             to="/rb2p_0/move_base/TebLocalPlannerROS/parameter_descriptions" />
+          <remap from="/move_base/TebLocalPlannerROS/parameter_updates"                  to="/rb2p_0/move_base/TebLocalPlannerROS/parameter_updates" />
+          <remap from="/move_base/global_costmap/inflation_layer/parameter_updates"      to="/rb2p_0/move_base/global_costmap/inflation_layer/parameter_updates" />
+          <remap from="/move_base/global_costmap/obstacle_layer/clearing_endpoints"      to="/rb2p_0/move_base/global_costmap/obstacle_layer/clearing_endpoints" />
+          <remap from="/move_base/global_costmap/obstacle_layer/parameter_descriptions"  to="/rb2p_0/move_base/global_costmap/obstacle_layer/parameter_descriptions" />
+          <remap from="/move_base/global_costmap/obstacle_layer/parameter_updates"       to="/rb2p_0/move_base/global_costmap/obstacle_layer/parameter_updates" />
+          <remap from="/move_base/global_costmap/parameter_descriptions"                 to="/rb2p_0/move_base/global_costmap/parameter_descriptions" />
+          <remap from="/move_base/global_costmap/parameter_updates"                      to="/rb2p_0/move_base/global_costmap/parameter_updates" />
+          <remap from="/move_base/global_costmap/static_layer/parameter_descriptions"    to="/rb2p_0/move_base/global_costmap/static_layer/parameter_descriptions" />
+          <remap from="/move_base/global_costmap/static_layer/parameter_updates"         to="/rb2p_0/move_base/global_costmap/static_layer/parameter_updates" />
+          <remap from="/move_base/goal"                                                  to="/rb2p_0/move_base/goal" />
+          <remap from="/move_base/local_costmap/obstacle_layer/parameter_descriptions"   to="/rb2p_0/move_base/local_costmap/obstacle_layer/parameter_descriptions" />
+          <remap from="/move_base/local_costmap/obstacle_layer/parameter_updates"        to="/rb2p_0/move_base/local_costmap/obstacle_layer/parameter_updates" />
+          <remap from="/move_base/local_costmap/parameter_descriptions"                  to="/rb2p_0/move_base/local_costmap/parameter_descriptions" />
+          <remap from="/move_base/local_costmap/parameter_updates"                       to="/rb2p_0/move_base/local_costmap/parameter_updates" />
+          <remap from="/move_base/local_costmap/static_layer/parameter_descriptions"     to="/rb2p_0/move_base/local_costmap/static_layer/parameter_descriptions" />
+          <remap from="/move_base/local_costmap/static_layer/parameter_updates"          to="/rb2p_0/move_base/local_costmap/static_layer/parameter_updates" />
+          <remap from="/move_base/parameter_descriptions"                                to="/rb2p_0/move_base/parameter_descriptions" />
+          <remap from="/move_base/parameter_updates"                                     to="/rb2p_0/move_base/parameter_updates" />
+          <remap from="/move_base/result"                                                to="/rb2p_0/move_base/result" />
+          <remap from="/move_base/status"                                                to="/rb2p_0/move_base/status" />
+          <remap from="/move_base_simple/goal"                                           to="/rb2p_0/move_base_simple/goal" />
+
+        </node>
+
+
+
+        <node pkg="amcl" type="amcl" name="amcl" output="screen">
+            <remap from="scan" to="$(arg robot_namespace)/scan"/>
+            <param name="global_frame_id" value="map"/>
+            <param name="odom_frame_id" value="$(arg robot_namespace)/odom"/>
+            <param name="base_frame_id" value="$(arg robot_namespace)/base_link"/>
+            <param name="use_map_topic" value="true"/>
+            <param name="odom_model_type" value="diff-corrected"/>
+            <param name="transform_tolerance" value="0.5"/>
+            <param name="update_min_d" value="0.2"/>
+            <param name="update_min_a" value="1.0"/>
+            <!--<param name="min_particles" value="500"/>-->
+            <!--<param name="max_particles" value="3000"/>-->
+            <!--<param name="tf_broadcast" value="true" />-->
+            <param name="initial_pose_x" value="0.0"/>
+            <param name="initial_pose_y" value="0.0"/>
+            <param name="initial_pose_z" value="0.0"/>
+            <remap from="initialpose"               to="$(arg robot_namespace)/initialpose"/>
+            <remap from="amcl_pose"                 to="$(arg robot_namespace)/amcl_pose"/>
+            <remap from="particlecloud"             to="$(arg robot_namespace)/particlecloud"/>
+
+         </node>
+
+    <param name="robot_description" command="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>
+    <!-- Show in Rviz   -->
+    <!--<node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find rosbot_description)/rviz/rosbot.rviz" required="true" output="screen"/>-->
+    <node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" output="screen" />
+
+
+</launch>
