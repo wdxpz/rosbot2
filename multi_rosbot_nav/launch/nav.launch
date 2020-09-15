@@ -43,8 +43,8 @@
 
     <param name="robot_description" command="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>
     <!-- Show in Rviz   -->
-    <!--<node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find rosbot_description)/rviz/rosbot.rviz" required="true" output="screen"/>-->
-    <node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" output="screen" />
+    <node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" args="-d $(find rosbot_description)/rviz/rosbot.rviz" required="true" output="screen"/>
+    <!--<node if="$(arg use_rviz)" name="rviz" pkg="rviz" type="rviz" output="screen" />-->
 
 
 </launch>
