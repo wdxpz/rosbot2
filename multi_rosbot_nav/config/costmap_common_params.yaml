@@ -8,4 +8,3 @@ laser_scan_sensor: {sensor_frame: laser, data_type: LaserScan, topic: scan, mark
 global_frame: map
 robot_base_frame: base_link
 always_send_full_costmap: true
-

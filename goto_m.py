@@ -26,22 +26,22 @@ import actionlib
 from actionlib_msgs.msg import *
 from geometry_msgs.msg import Pose, Point, Quaternion
 
+from init import PoseIniter
 from logger import getLogger
 logger = getLogger('GoToPose')
 
-position = {'x': 0.0, 'y' : 0.7}
+position = [(0.0, 0.3), (0.3, 0.3), (0.0, 0.5),(0.0, 0.0)]
 
 
 class GoToPose():
     def __init__(self):
 
         self.goal_sent = False
-
 	# What to do if shut down (e.g. Ctrl-C or failure)
         rospy.on_shutdown(self.shutdown)
 
 	# Tell the action client that we want to spin a thread by default
-        self.move_base = actionlib.SimpleActionClient("rb2p_0/move_base", MoveBaseAction)
+        self.move_base = actionlib.SimpleActionClient("rosbot1/move_base", MoveBaseAction)
         logger.info("Wait for the action server to come up")
 
 	# Allow up to 5 seconds for the action server to come up
@@ -54,7 +54,7 @@ class GoToPose():
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = 'map'
         goal.target_pose.header.stamp = rospy.Time(0)
-        goal.target_pose.pose = Pose(Point(pos['x'], pos['y'], 0.000),
+        goal.target_pose.pose = Pose(Point(pos[1], -pos[0], 0.000),
                                      Quaternion(quat['r1'], quat['r2'], quat['r3'], quat['r4']))
         logger.info(goal)
 
@@ -81,8 +81,8 @@ class GoToPose():
 
         listener = tf.TransformListener()
         try:
-            listener.waitForTransform("/map", "rb2p_0/base_link", rospy.Time(0), rospy.Duration(10.0))
-            trans, rot = listener.lookupTransform("/map", "rb2p_0/base_link", rospy.Time(0))
+            listener.waitForTransform("/map", "rosbot1/base_link", rospy.Time(0), rospy.Duration(10.0))
+            trans, rot = listener.lookupTransform("/map", "rosbot1/base_link", rospy.Time(0))
             robot_x, robot_y = trans[0], trans[1]
             logger.info('current position -- x:{}, y:{}'.format(robot_x, robot_y))
         except Exception as e:
@@ -99,23 +99,28 @@ class GoToPose():
 if __name__ == '__main__':
     try:
         rospy.init_node('nav_test', anonymous=False)
+
+        initer = PoseIniter('rosbot1', 0, 0, 0)
+        initer.set_pose()
+
         navigator = GoToPose()
 
         # Customize the following values so they are appropriate for your location
         #position = {'x': 0.3, 'y' : 1.5}
         quaternion = {'r1' : 0.000, 'r2' : 0.000, 'r3' : 0.000, 'r4' : 1.000}
 
-        rospy.loginfo("Go to (%s, %s) pose", position['x'], position['y'])
-        success = navigator.goto(position, quaternion)
+        for pos in position:
+            rospy.loginfo("Go to (%s, %s) pose", pos[0], pos[1])
+            success = navigator.goto(pos, quaternion)
 
-        if success:
-            rospy.loginfo("Hooray, reached the desired pose")
-            navigator.getMapLocation()
-        else:
-            rospy.loginfo("The base failed to reach the desired pose")
+            if success:
+                rospy.loginfo("Hooray, reached the desired pose")
+                navigator.getMapLocation()
+            else:
+                rospy.loginfo("The base failed to reach the desired pose")
 
-        # Sleep to give the last log messages time to be sent
-        rospy.sleep(1)
+            # Sleep to give the last log messages time to be sent
+            rospy.sleep(1)
 
     except rospy.ROSInterruptException:
         rospy.loginfo("Ctrl-C caught. Quitting")

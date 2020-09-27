@@ -1,7 +1,7 @@
 <launch>
 
     <arg name="initial_pose_x" value="0.0"/> 
-    <arg name="initial_pose_y" value="1.0"/> 
+    <arg name="initial_pose_y" value="0.0"/> 
     <arg name="initial_pose_z" value="0.0"/>
     <arg name="robot_name" value="rosbot1"/>
 
@@ -15,6 +15,10 @@
     <param name="update_min_a" value="1.0"/>
     <param name="global_frame_id" value="map" />
     <param name="use_map_topic" value="true" />
+    <param name="min_particles" value="1000"/>
+    <param name="max_particles" value="5000"/>
+
+
 
     <param name="initial_pose_x"            value="$(arg initial_pose_x)"/>
     <param name="initial_pose_y"            value="$(arg initial_pose_y)"/>
@@ -25,4 +29,3 @@
     </node>   
 
 </launch>
-
