@@ -86,7 +86,7 @@ class GoToPose():
             listener.waitForTransform("/map", "rosbot1/base_link", rospy.Time(0), rospy.Duration(10.0))
             trans, rot = listener.lookupTransform("/map", "rosbot1/base_link", rospy.Time(0))
             ##map(x, y) =  trans(-y, x)
-            robot_x, robot_y = trans[0], trans[1]
+            robot_x, robot_y = -trans[1], trans[0]
             logger.info('current position -- x:{}, y:{}'.format(robot_x, robot_y))
         except Exception as e:
             logger.error('getMapLocation Error of robot')
