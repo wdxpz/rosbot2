@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 '''
@@ -30,7 +31,7 @@ from init import PoseIniter
 from logger import getLogger
 logger = getLogger('GoToPose')
 
-position = [(0.0, 0.3), (0.3, 0.3), (0.0, 0.5),(0.0, 0.0)]
+position = [(-0.2, 0.0), (0.0, 0.3), (0.1, 0.5), (0.3, 0.7), (0.0, 0.3), (0.0, 0.0)]
 
 
 class GoToPose():
@@ -50,6 +51,7 @@ class GoToPose():
     def goto(self, pos, quat):
 
         # Send a goal
+        ## navigation(x,y) = map(y, -x)
         self.goal_sent = True
         goal = MoveBaseGoal()
         goal.target_pose.header.frame_id = 'map'
@@ -83,6 +85,7 @@ class GoToPose():
         try:
             listener.waitForTransform("/map", "rosbot1/base_link", rospy.Time(0), rospy.Duration(10.0))
             trans, rot = listener.lookupTransform("/map", "rosbot1/base_link", rospy.Time(0))
+            ##map(x, y) =  trans(-y, x)
             robot_x, robot_y = trans[0], trans[1]
             logger.info('current position -- x:{}, y:{}'.format(robot_x, robot_y))
         except Exception as e:
