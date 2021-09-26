@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 
-	<!-- map server with simul map -->
+	<!-- map server with simul map
 	<arg name="map_file" default="$(find multi_rosbot_nav)/maps/bj01/map.yaml" />
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" respawn="false" />
-	
+        -->
     
     <!-- ROSBOT1 -->
 	<group ns="rosbot1">
@@ -36,13 +36,12 @@
             <remap from="odometry/filtered" to="/rosbot1/odom"/>
             <!-- <remap from="accel/filtered" to=""/> -->
         </node>
-        <node pkg="tf" type="static_transform_publisher" name="imu_publisher" args="0 0 0.02 0 0 0 rosbot1/base_link rosbot1/imu_link 100" />
-        <!--replace rosbot_ekf/launch/all.launch-->
+
+        <!--<node pkg="tf" type="static_transform_publisher" name="imu_publisher" args="0 0 0.02 0 0 0 rosbot1/base_link rosbot1/imu_link 100" />-->
 
 	<node pkg="tf" type="static_transform_publisher" name="laser_broadcaster" args="0 0 0 3.14 0 0 rosbot1/base_link rosbot1/laser 100" />
 	</group>
 
-
-    <include file="$(find multi_rosbot_nav)/launch/amcl_only_rosbot1.launch" />
     <include file="$(find multi_rosbot_nav)/launch/move_base_rosbot1.launch" />
+    <include file="$(find multi_rosbot_nav)/launch/amcl_only_rosbot1.launch" />
 </launch>
